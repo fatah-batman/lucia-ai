@@ -89,33 +89,7 @@ def web_search(query: str) -> str:
         return f"Web search failed: {e}"
 
 
-# Whitelist of apps LUCIA may open. Edit this to match your machine.
-# Safer than letting the model run arbitrary commands.
-APP_WHITELIST = {
-    "Windows": {
-        "notepad": "notepad",
-        "calculator": "calc",
-        "calc": "calc",
-        "chrome": "chrome",
-        "vscode": "code",
-        "code": "code",
-        "explorer": "explorer",
-    },
-    "Darwin": {  # macOS
-        "safari": "Safari",
-        "calculator": "Calculator",
-        "chrome": "Google Chrome",
-        "vscode": "Visual Studio Code",
-        "terminal": "Terminal",
-    },
-    "Linux": {
-        "calculator": "gnome-calculator",
-        "chrome": "google-chrome",
-        "vscode": "code",
-        "terminal": "gnome-terminal",
-        "files": "nautilus",
-    },
-}
+from config import APP_WHITELIST
 
 
 def open_app(app_name: str) -> str:

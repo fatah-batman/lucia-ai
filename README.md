@@ -7,7 +7,7 @@
    ```
    ollama pull qwen2.5:7b
    ```
-   Low on RAM (<8 GB)? Use `qwen2.5:3b` or `llama3.2:3b` and change `MODEL` in main.py.
+   Low on RAM (<8 GB)? Use `qwen2.5:3b` or `llama3.2:3b` and change `MODEL` in `config.py`.
 3. Create and activate a virtual environment (Python 3.10+):
    - **Windows (PowerShell)**:
      ```powershell
@@ -42,8 +42,18 @@
 
 ## Files
 
-- `main.py`  - chat loop + tool-calling logic
-- `tools.py` - the actions (add new tools here; just write a function with a docstring, then add it to `TOOLS`)
+- `config.py` - central configuration (`MODEL`, `SYSTEM_PROMPT`, `MAX_TOOL_ROUNDS`, `MAX_HISTORY_MESSAGES`, `APP_WHITELIST`)
+- `main.py`   - chat loop, streaming response handling (`stream=True`, pluggable `on_token`), tool-calling logic, and history trimming
+- `tools.py`  - the actions (add new tools here; write a function with a docstring, then register it in `TOOLS`)
+- `tests/`    - pytest test suite for tools, central config, and history trimming
+
+## Configuration
+
+All settings are centralized in `config.py`. To switch models (e.g. to `qwen2.5:14b` or a smaller `qwen2.5:3b`), change `MODEL` in `config.py`:
+
+```python
+MODEL = "qwen2.5:14b"
+```
 
 ## Adding a tool
 
