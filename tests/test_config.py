@@ -66,3 +66,26 @@ def test_phase2_config_constants_exist():
     assert isinstance(config.AUDIO_MIN_DURATION_SECONDS, (int, float))
     assert isinstance(config.AUDIO_RMS_THRESHOLD, (int, float))
     assert isinstance(config.REQUIRE_TERMINAL_FOCUS, bool)
+
+
+def test_phase3_config_constants_exist():
+    """Verify Phase 3 wake word and hands-free settings exist with correct types."""
+    assert hasattr(config, "WAKE_WORD_MODEL")
+    assert hasattr(config, "WAKE_WORD_THRESHOLD")
+    assert hasattr(config, "WAKE_SPEECH_START_TIMEOUT")
+    assert hasattr(config, "WAKE_END_OF_SPEECH_PAUSE")
+    assert hasattr(config, "WAKE_SILENCE_RMS_THRESHOLD")
+    assert hasattr(config, "WAKE_PRE_ROLL_SECONDS")
+    assert hasattr(config, "WAKE_MAX_RECORDING_SECONDS")
+    assert hasattr(config, "WAKE_COOLDOWN_SECONDS")
+
+    assert isinstance(config.WAKE_WORD_MODEL, str)
+    assert isinstance(config.WAKE_WORD_THRESHOLD, (int, float))
+    assert 0.0 <= config.WAKE_WORD_THRESHOLD <= 1.0
+    assert isinstance(config.WAKE_SPEECH_START_TIMEOUT, (int, float))
+    assert isinstance(config.WAKE_END_OF_SPEECH_PAUSE, (int, float))
+    assert isinstance(config.WAKE_SILENCE_RMS_THRESHOLD, (int, float))
+    assert isinstance(config.WAKE_PRE_ROLL_SECONDS, (int, float))
+    assert isinstance(config.WAKE_MAX_RECORDING_SECONDS, (int, float))
+    assert isinstance(config.WAKE_COOLDOWN_SECONDS, (int, float))
+

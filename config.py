@@ -56,9 +56,19 @@ PUSH_TO_TALK_KEY = "space"            # Push-to-talk key to hold while speaking
 AUDIO_SAMPLE_RATE = 16000             # Standard sampling rate for Whisper STT (16 kHz)
 AUDIO_CHANNELS = 1                    # Mono recording
 AUDIO_MIN_DURATION_SECONDS = 0.3      # Minimum press duration in seconds to trigger processing
-SILENCE_RMS_THRESHOLD = 0.003          # Baseline RMS threshold (to be calibrated with user mic numbers)
+SILENCE_RMS_THRESHOLD = 0.048          # Calibrated RMS threshold from mic readings
 AUDIO_RMS_THRESHOLD = SILENCE_RMS_THRESHOLD  # Backward compatibility alias
 REQUIRE_TERMINAL_FOCUS = False        # Set to False so it works reliably in IDE terminals and Windows Terminal
+
+# Wake Word & Hands-Free Configuration (Phase 3)
+WAKE_WORD_MODEL = "hey_jarvis"            # Pretrained openWakeWord model
+WAKE_WORD_THRESHOLD = 0.5                # Activation score threshold (0.0 to 1.0)
+WAKE_SPEECH_START_TIMEOUT = 3.5          # Seconds to wait for speech to start after wake word
+WAKE_END_OF_SPEECH_PAUSE = 1.2           # Consecutive seconds of silence to detect end of speech
+WAKE_SILENCE_RMS_THRESHOLD = SILENCE_RMS_THRESHOLD  # RMS silence threshold for hands-free speech detection
+WAKE_PRE_ROLL_SECONDS = 0.5              # Pre-roll audio buffer to prevent clipping first syllable
+WAKE_MAX_RECORDING_SECONDS = 15.0        # Max safety recording limit
+WAKE_COOLDOWN_SECONDS = 1.0              # Post-TTS playback pause before resuming wake word listening
 
 # Known Whisper hallucinations on quiet ambient noise/silence
 WHISPER_HALLUCINATION_PHRASES = [
@@ -74,3 +84,4 @@ WHISPER_HALLUCINATION_PHRASES = [
     "subscribe",
     "watching",
 ]
+

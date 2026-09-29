@@ -7,3 +7,4 @@ piper-tts
 sounddevice
 numpy
 pynput
+openwakeword
