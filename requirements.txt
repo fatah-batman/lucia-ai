@@ -2,3 +2,8 @@ ollama
 requests
 ddgs
 pytest
+faster-whisper
+piper-tts
+sounddevice
+numpy
+pynput

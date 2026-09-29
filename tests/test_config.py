@@ -38,3 +38,31 @@ def test_model_switching_is_one_line(monkeypatch):
     monkeypatch.setattr(config, "MODEL", "qwen2.5:14b")
     # If main dynamically references or if config is updated:
     assert config.MODEL == "qwen2.5:14b"
+
+
+def test_phase2_config_constants_exist():
+    """Verify Phase 2 voice, STT, and TTS settings are present and typed properly."""
+    assert hasattr(config, "WHISPER_MODEL_SIZE")
+    assert hasattr(config, "WHISPER_DEVICE")
+    assert hasattr(config, "WHISPER_COMPUTE_TYPE")
+    assert hasattr(config, "PIPER_VOICE_MODEL")
+    assert hasattr(config, "PIPER_VOICE_CONFIG")
+    assert hasattr(config, "PIPER_VOICE_URL")
+    assert hasattr(config, "PIPER_CONFIG_URL")
+    assert hasattr(config, "PUSH_TO_TALK_KEY")
+    assert hasattr(config, "AUDIO_SAMPLE_RATE")
+    assert hasattr(config, "AUDIO_CHANNELS")
+    assert hasattr(config, "AUDIO_MIN_DURATION_SECONDS")
+    assert hasattr(config, "AUDIO_RMS_THRESHOLD")
+    assert hasattr(config, "REQUIRE_TERMINAL_FOCUS")
+
+    assert isinstance(config.WHISPER_MODEL_SIZE, str)
+    assert isinstance(config.WHISPER_DEVICE, str)
+    assert isinstance(config.WHISPER_COMPUTE_TYPE, str)
+    assert isinstance(config.PIPER_VOICE_MODEL, str)
+    assert isinstance(config.PUSH_TO_TALK_KEY, str)
+    assert isinstance(config.AUDIO_SAMPLE_RATE, int)
+    assert isinstance(config.AUDIO_CHANNELS, int)
+    assert isinstance(config.AUDIO_MIN_DURATION_SECONDS, (int, float))
+    assert isinstance(config.AUDIO_RMS_THRESHOLD, (int, float))
+    assert isinstance(config.REQUIRE_TERMINAL_FOCUS, bool)

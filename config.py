@@ -41,3 +41,20 @@ APP_WHITELIST = {
         "files": "nautilus",
     },
 }
+
+# Voice & Audio Configuration (Phase 2)
+WHISPER_MODEL_SIZE = "small"          # Whisper model size ("small" default, "base" fallback)
+WHISPER_DEVICE = "cuda"               # Preferred device: "cuda" on GPU, auto-falls back to "cpu"
+WHISPER_COMPUTE_TYPE = "float16"      # Compute precision: "float16" on GPU, "int8" on CPU fallback
+
+PIPER_VOICE_MODEL = "voices/en_US-lessac-medium.onnx"
+PIPER_VOICE_CONFIG = "voices/en_US-lessac-medium.onnx.json"
+PIPER_VOICE_URL = "https://huggingface.co/rhasspy/piper-voices/resolve/main/en/en_US/lessac/medium/en_US-lessac-medium.onnx"
+PIPER_CONFIG_URL = "https://huggingface.co/rhasspy/piper-voices/resolve/main/en/en_US/lessac/medium/en_US-lessac-medium.onnx.json"
+
+PUSH_TO_TALK_KEY = "space"            # Push-to-talk key to hold while speaking
+AUDIO_SAMPLE_RATE = 16000             # Standard sampling rate for Whisper STT (16 kHz)
+AUDIO_CHANNELS = 1                    # Mono recording
+AUDIO_MIN_DURATION_SECONDS = 0.3      # Minimum press duration in seconds to trigger processing
+AUDIO_RMS_THRESHOLD = 0.003           # RMS amplitude threshold (sensitive enough for quiet mics)
+REQUIRE_TERMINAL_FOCUS = False        # Set to False so it works reliably in IDE terminals and Windows Terminal
