@@ -156,24 +156,36 @@ def main():
 
             duration = len(audio_data) / config.AUDIO_SAMPLE_RATE
 
+            # Calculate RMS amplitude on every key release
+            rms = float(np.sqrt(np.mean(audio_data ** 2))) if audio_data.size > 0 else 0.0
+
+            # DEBUG PRINT: Measured amplitude on every release for threshold calibration
+            print(f"\n[DEBUG Amplitude] Measured RMS: {rms:.5f} | Duration: {duration:.2f}s")
+
             # Ignore brief taps
             if duration < config.AUDIO_MIN_DURATION_SECONDS:
-                print(f"\n[Tap ignored: held for {duration:.2f}s < minimum {config.AUDIO_MIN_DURATION_SECONDS}s]\n")
+                print(f"[Tap ignored: held for {duration:.2f}s < minimum {config.AUDIO_MIN_DURATION_SECONDS}s]\n")
                 continue
 
-            # Check RMS energy threshold
-            rms = float(np.sqrt(np.mean(audio_data ** 2)))
-            if rms < config.AUDIO_RMS_THRESHOLD:
-                print(f"\n[No speech detected: audio too quiet (RMS: {rms:.4f} < {config.AUDIO_RMS_THRESHOLD})]\n")
+            # 1. Amplitude / Silence Threshold Filter
+            silence_thresh = getattr(config, "SILENCE_RMS_THRESHOLD", config.AUDIO_RMS_THRESHOLD)
+            if rms < silence_thresh:
+                print(f"  [Amplitude filter] No speech detected: audio below threshold (RMS {rms:.5f} < {silence_thresh})\n")
                 continue
 
-            print(f"\n[Processing speech... {duration:.1f}s, transcribing...]", flush=True)
-            transcription = stt.transcribe(audio_data)
+            print(f"[Processing speech... {duration:.1f}s, transcribing...]", flush=True)
+            raw_transcription = stt.transcribe_raw(audio_data)
 
-            if not transcription:
-                print("[No recognizable speech detected]\n")
+            if not raw_transcription:
+                print("  [Amplitude filter] No speech detected: audio below threshold or empty\n")
                 continue
 
+            # 2. Hallucination Filter
+            if stt.is_hallucination(raw_transcription):
+                print(f"  [Hallucination filter] Filtered Whisper hallucination '{raw_transcription}' as no speech\n")
+                continue
+
+            transcription = raw_transcription
             print(f"You: {transcription}")
 
             snapshot = list(messages)

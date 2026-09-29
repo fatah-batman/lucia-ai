@@ -1,6 +1,7 @@
 """stt.py - Local Speech-to-Text using faster-whisper on GPU with automatic CPU fallback."""
 
 import logging
+import re
 import threading
 from typing import Optional, Union
 
@@ -14,6 +15,28 @@ logger = logging.getLogger(__name__)
 _whisper_instance: Optional[WhisperModel] = None
 _whisper_lock = threading.Lock()
 _device_used: str = "unknown"
+
+
+def is_hallucination(text: str) -> bool:
+    """Check if transcribed text is empty or matches known Whisper silence hallucinations.
+
+    Strips punctuation and whitespace, lowercases the text, and checks against
+    config.WHISPER_HALLUCINATION_PHRASES.
+    """
+    if not text:
+        return True
+
+    # Strip punctuation and whitespace, lowercase
+    cleaned = re.sub(r"[^\w\s]", "", text).strip().lower()
+    if not cleaned:
+        return True
+
+    normalized_hallucinations = {
+        re.sub(r"[^\w\s]", "", phrase).strip().lower()
+        for phrase in getattr(config, "WHISPER_HALLUCINATION_PHRASES", [])
+    }
+
+    return cleaned in normalized_hallucinations
 
 
 def get_whisper_model() -> WhisperModel:
@@ -70,14 +93,14 @@ def get_active_device() -> str:
     return _device_used
 
 
-def transcribe(audio: Union[np.ndarray, str]) -> str:
-    """Transcribe audio into text using the loaded Whisper model.
+def transcribe_raw(audio: Union[np.ndarray, str]) -> str:
+    """Transcribe audio into text without filtering hallucinations.
 
     Args:
         audio: 1D float32 NumPy array (16 kHz mono) or path to an audio file.
 
     Returns:
-        The transcribed text string, or empty string if silence/no speech.
+        The raw transcribed text string, or empty string on error/silence.
     """
     if isinstance(audio, np.ndarray):
         if audio.size == 0:
@@ -90,9 +113,10 @@ def transcribe(audio: Union[np.ndarray, str]) -> str:
             audio = audio.flatten()
 
         # Check energy / RMS threshold
+        threshold = getattr(config, "SILENCE_RMS_THRESHOLD", config.AUDIO_RMS_THRESHOLD)
         rms = float(np.sqrt(np.mean(audio ** 2)))
-        if rms < config.AUDIO_RMS_THRESHOLD:
-            logger.debug(f"Audio below RMS threshold ({rms:.4f} < {config.AUDIO_RMS_THRESHOLD})")
+        if rms < threshold:
+            logger.debug(f"Audio below RMS threshold ({rms:.5f} < {threshold})")
             return ""
 
     try:
@@ -103,8 +127,22 @@ def transcribe(audio: Union[np.ndarray, str]) -> str:
             language="en",
             condition_on_previous_text=False,
         )
-        transcribed_text = " ".join(seg.text.strip() for seg in segments).strip()
-        return transcribed_text
+        return " ".join(seg.text.strip() for seg in segments).strip()
     except Exception as e:
         logger.error(f"Whisper transcription error: {e}")
         return ""
+
+
+def transcribe(audio: Union[np.ndarray, str]) -> str:
+    """Transcribe audio into text and filter out known Whisper hallucinations.
+
+    Args:
+        audio: 1D float32 NumPy array (16 kHz mono) or path to an audio file.
+
+    Returns:
+        The transcribed text string, or empty string if silence or hallucination.
+    """
+    raw_text = transcribe_raw(audio)
+    if is_hallucination(raw_text):
+        return ""
+    return raw_text
