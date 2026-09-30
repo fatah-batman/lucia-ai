@@ -5,7 +5,7 @@ import os
 import queue
 import re
 import threading
-from typing import Optional
+from typing import Callable, Optional
 
 import numpy as np
 import requests
@@ -110,11 +110,12 @@ class SentenceSpeaker:
       - Supports immediate interruption (barge-in) when the user speaks.
     """
 
-    def __init__(self):
+    def __init__(self, on_playback_amplitude: Optional[Callable[[float], None]] = None):
         self.buffer = ""
         self.queue: queue.Queue[Optional[str]] = queue.Queue()
         self.interrupt_flag = threading.Event()
         self.is_speaking_flag = threading.Event()
+        self.on_playback_amplitude = on_playback_amplitude
         self._worker_thread = threading.Thread(target=self._playback_loop, daemon=True)
         self._worker_thread.start()
 
@@ -133,15 +134,20 @@ class SentenceSpeaker:
             try:
                 audio, sample_rate = synthesize_text_to_audio(sentence)
                 if len(audio) > 0 and not self.interrupt_flag.is_set():
+                    sentence_rms = float(np.sqrt(np.mean(audio ** 2))) if audio.size > 0 else 0.0
                     sd.play(audio, samplerate=sample_rate)
                     while sd.get_stream().active:
                         if self.interrupt_flag.is_set():
                             sd.stop()
                             break
+                        if self.on_playback_amplitude:
+                            self.on_playback_amplitude(sentence_rms)
                         sd.sleep(30)
             except Exception as e:
                 logger.error(f"TTS playback error: {e}")
             finally:
+                if self.on_playback_amplitude:
+                    self.on_playback_amplitude(0.0)
                 self.is_speaking_flag.clear()
                 self.queue.task_done()
 

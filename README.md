@@ -4,6 +4,7 @@ Inspired by JARVIS from Iron Man. Built in modular phases:
 - **Phase 1**: Text assistant with Ollama tool calling, token streaming, and rolling history trimming.
 - **Phase 2**: Local voice input (STT via `faster-whisper`) and output (TTS via `piper-tts`) with push-to-talk, barge-in, silence/hallucination filtering, and decimal-safe sentence-streaming speech.
 - **Phase 3**: Hands-free wake word detection via `openWakeWord` ("Hey Jarvis" stand-in), silence-based end-of-speech capture, and acoustic cooldown.
+- **Phase 4**: Web Dashboard with a 3D animated reactive orb (Three.js + GLSL Simplex noise + UnrealBloomPass), live streaming chat log, and WebSocket telemetry.
 
 ---
 
@@ -39,16 +40,28 @@ Inspired by JARVIS from Iron Man. Built in modular phases:
 
 ## Running LUCIA
 
-### 1. Hands-Free Wake Word Mode (Phase 3)
+### 1. Web Dashboard & 3D Reactive Orb (Phase 4)
+```bash
+python server.py
+```
+Open your browser at **http://127.0.0.1:8000**:
+- **Animated 3D Orb**: Renders in Three.js with GPU-displaced 3D Simplex noise and bloom post-processing (`UnrealBloomPass`).
+- **Dynamic Reactivity**: Smoothly transitions color, glow, and motion across assistant states (`IDLE` cyan, `LISTENING` neon turquoise, `THINKING` purple pulse, `SPEAKING` golden amber).
+- **Sound Driven**: Ripples dynamically to live microphone input and synthesized speech amplitude.
+- **Live Transcript**: Transcribed speech and streaming LLM replies appear live in the glassmorphic chat sidebar.
+- **Unified Pipeline**: Runs the complete hands-free wake word engine in a background thread—terminal logs and web UI stay synchronized with zero microphone contention.
+- **Interrupts**: Say *"Hey Jarvis"*, press **SPACEBAR**, or click the on-screen mic button anytime to interrupt or speak.
+
+### 2. Hands-Free Wake Word Mode (Phase 3 Console)
 ```bash
 python main_wake.py
 ```
 - **Hands-Free Wake Word**: Say **"Hey Jarvis"** to wake LUCIA up. No key press required.
+- **Manual Interrupt**: Press **SPACEBAR** anytime to interrupt ongoing speech or speak immediately.
 - **End-of-Speech Detection**: Automatically stops recording when you finish speaking (after `WAKE_END_OF_SPEECH_PAUSE = 1.2` seconds of silence).
 - **Pre-Roll Ring Buffer**: Captures 0.5s prior to trigger so the very first word of your command is never clipped.
-- **Short Command Friendly**: Preserves quick queries (e.g. *"time?"*, *"stop"*) without hard minimum duration rejects.
 - **Acoustic Cooldown**: Wake-word listening is completely gated off while LUCIA speaks, and a 1-second acoustic cooldown purges echo before listening re-arms.
-- **Tuning Wake Detection**: Adjust `WAKE_WORD_THRESHOLD` (default: `0.5`) in `config.py` (increase to `0.6`–`0.65` if TV/media causes false triggers).
+
 
 ### 2. Push-to-Talk Voice Mode (Phase 2)
 ```bash
@@ -81,15 +94,17 @@ Type your query and press Enter. Type `exit` or `quit` to exit.
 
 ## Architecture & Files
 
-- `config.py`: Centralized configuration (`MODEL`, `SYSTEM_PROMPT`, `WAKE_*`, `WHISPER_*`, `PIPER_*`, `AUDIO_*`, `APP_WHITELIST`).
+- `server.py`: FastAPI + WebSocket server running the web dashboard and unified voice pipeline.
+- `static/`: Frontend single-page app (`index.html`, `style.css`, `app.js`) with Three.js 3D reactive orb and live transcript.
 - `wakeword.py`: Wake word detection wrapper using `openWakeWord` with automatic model downloading, failure handling, and state resets.
-- `main_wake.py`: Hands-free wake word entry point with end-of-speech detection and echo cooldown.
+- `main_wake.py`: Hands-free wake word console entry point with end-of-speech detection and echo cooldown.
 - `main_voice.py`: Push-to-talk voice mode entry point.
 - `main.py`: Interactive text chat loop.
 - `stt.py`: Speech-to-Text module using `faster-whisper` with automatic GPU-to-CPU fallback, silence RMS checks, and hallucination filters.
 - `tts.py`: Text-to-Speech module using `piper-tts` on CPU, auto-voice downloader, decimal-safe sentence splitter, and streaming playback queue.
 - `tools.py`: Actions registry (`get_current_time`, `get_weather`, `web_search`, `open_app`).
-- `tests/`: Comprehensive test suite across config, history, tools, STT, TTS, and wake word detection.
+- `tests/`: Comprehensive test suite across config, history, tools, STT, TTS, wake word detection, and web server.
+
 
 ---
 

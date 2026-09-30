@@ -8,3 +8,6 @@ sounddevice
 numpy
 pynput
 openwakeword
+fastapi
+uvicorn
+websockets

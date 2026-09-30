@@ -56,9 +56,10 @@ PUSH_TO_TALK_KEY = "space"            # Push-to-talk key to hold while speaking
 AUDIO_SAMPLE_RATE = 16000             # Standard sampling rate for Whisper STT (16 kHz)
 AUDIO_CHANNELS = 1                    # Mono recording
 AUDIO_MIN_DURATION_SECONDS = 0.3      # Minimum press duration in seconds to trigger processing
-SILENCE_RMS_THRESHOLD = 0.048          # Calibrated RMS threshold from mic readings
+SILENCE_RMS_THRESHOLD = 0.035          # Calibrated RMS threshold for reliable speech capture
 AUDIO_RMS_THRESHOLD = SILENCE_RMS_THRESHOLD  # Backward compatibility alias
 REQUIRE_TERMINAL_FOCUS = False        # Set to False so it works reliably in IDE terminals and Windows Terminal
+
 
 # Wake Word & Hands-Free Configuration (Phase 3)
 WAKE_WORD_MODEL = "hey_jarvis"            # Pretrained openWakeWord model
