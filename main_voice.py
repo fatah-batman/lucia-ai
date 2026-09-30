@@ -56,6 +56,18 @@ def check_audio_devices() -> None:
         print(f"Warning: Audio device check failed ({e}). Check your audio hardware.")
 
 
+def check_ollama_server() -> None:
+    """Check if the local Ollama service is reachable, warning if offline."""
+    import urllib.request
+    try:
+        with urllib.request.urlopen("http://localhost:11434", timeout=1.0) as resp:
+            if resp.status != 200:
+                print("Warning: Ollama server returned non-200 status code.")
+    except Exception:
+        print("Warning: Ollama server is not running on http://localhost:11434.")
+        print("Please start Ollama in a separate terminal ('ollama serve') for responses.\n")
+
+
 def main():
     print("=" * 60)
     print(f"LUCIA Voice Assistant Online (Model: {config.MODEL})")
@@ -66,6 +78,7 @@ def main():
     print("=" * 60 + "\n")
 
     check_audio_devices()
+    check_ollama_server()
 
     # Pre-load STT and TTS models once at startup
     stt.get_whisper_model()
@@ -210,6 +223,16 @@ def main():
                 messages[:] = snapshot
                 print("\n\n[Interrupted turn]\n")
                 continue
+            except Exception as e:
+                speaker.interrupt()
+                messages[:] = snapshot
+                err_str = str(e)
+                if "10061" in err_str or "ConnectError" in type(e).__name__:
+                    print("\n[Error] Cannot connect to Ollama. Is the server running? Start it with 'ollama serve'.\n")
+                else:
+                    print(f"\n[Error during turn: {e}]\n")
+                continue
+
 
     except KeyboardInterrupt:
         print("\n\nShutting down LUCIA Voice. Goodbye.")

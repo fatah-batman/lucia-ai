@@ -96,6 +96,13 @@ def test_wakeword_detector_threshold_logic():
         assert score == 0.85
 
 
+def test_main_wake_interrupt_exception():
+    """Verify PlaybackInterrupted is properly defined and catchable as an Exception."""
+    import main_wake
+    assert issubclass(main_wake.PlaybackInterrupted, Exception)
+
+
+
 def test_wakeword_acoustic_sample_real_utterance():
     """Tier 2: Real acoustic validation test.
 
